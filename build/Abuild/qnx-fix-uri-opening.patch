@@ -1,0 +1,29 @@
+--- a/gtk/gtkshow.c
++++ b/gtk/gtkshow.c
+@@ -153,6 +153,20 @@ gtk_show_uri_on_window (GtkWindow   *parent,
+ 
+   g_object_set_data_full (G_OBJECT (context), "uri", g_strdup (uri), g_free);
+ 
++#ifdef __QNX__
++  /* QNX: Skip gtk_window_export_handle() and g_app_info_launch_default_for_uri()
++   * as they hang due to missing xdg_foreign protocol and xdg-desktop-portal.
++   * Use system() to call xdg-open directly as a workaround. */
++  g_print("Opening URI: %s\n", uri);
++
++  gchar *command = g_strdup_printf("xdg-open '%s' &", uri);
++  int result = system(command);
++  g_free(command);
++  ret = (result == 0);
++
++  g_object_unref (context);
++  return ret;
++#else
+   if (parent && gtk_window_export_handle (parent, window_handle_exported, context))
+     return TRUE;
+ 
+@@ -160,4 +174,5 @@ gtk_show_uri_on_window (GtkWindow   *parent,
+   g_object_unref (context);
+ 
+   return ret;
++#endif
+ }

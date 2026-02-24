@@ -1,0 +1,138 @@
+pkgname=gtk3
+pkgver=3.24.51
+pkgrel=4
+pkgdesc="The GTK+ Toolkit (v3)"
+url="https://www.gtk.org/"
+arch="all"
+options="!check"
+license="LGPL-2.1-or-later"
+triggers="gtk-update-icon-cache.trigger=/usr/share/icons/*"
+depends_dev="
+    glib-dev
+    gdk-pixbuf-dev
+    libepoxy-dev
+    pango-dev
+    tiff-dev
+    libxkbcommon-dev
+    wayland-dev
+    wayland-protocols
+    gobject-introspection-dev
+    at-spi2-core-dev
+    "
+_icon_cache_depends="hicolor-icon-theme"
+makedepends="
+    $_icon_cache_depends
+    $depends_dev
+    qnx-io-sock-dev
+    meson
+    ninja
+    pkgconf
+    sassc
+    git
+    cmake
+    pango-tools
+    pkgconf-dev
+    glib-dev
+    cairo-dev
+    zlib-ng-dev
+    expat-dev
+    libxkbcommon-dev
+    gettext-dev
+    libc++
+    clang
+    "
+depends="
+    gobject-introspection
+    shared-mime-info
+    libintl
+    qnx-io-sock
+    desktop-file-utils
+    cairo
+    cairo-gobject
+    pango
+    harfbuzz-gobject
+    wayland
+    gdk-pixbuf
+    libepoxy
+    tiff
+    at-spi2-core
+    at-spi2-core-libs
+    libxkbcommon
+    "
+subpackages="
+    $pkgname-dbg
+    $pkgname-static
+    $pkgname-dev
+    $pkgname-demo
+    $pkgname-lang
+    gtk-update-icon-cache:icon_cache
+    "
+source="
+    https://download.gnome.org/sources/gtk/${pkgver%.*}/gtk-$pkgver.tar.xz
+    qnx-fix.patch
+    qnx-fix-uri-opening.patch
+    qnx-fix-maximize.patch
+    "
+builddir="$srcdir/gtk-$pkgver"
+
+build() {
+    CC=clang \
+    CXX="clang++" \
+    CFLAGS="$CFLAGS -O2 -Qunused-arguments" \
+    CXXFLAGS="$CXXFLAGS -O2 -Qunused-arguments" \
+    abuild-meson \
+        -Db_lto=false \
+        -Dintrospection=true \
+        -Dexamples=true \
+        -Dtests=false \
+        -Ddemos=true \
+        -Dinstalled_tests=true \
+        -Dwayland_backend=true \
+        -Dx11_backend=false \
+        -Ddebug=true \
+        -Ddefault_library=both \
+        -Dc_link_args="-Wl,-lm,-lsocket,-lgcc_s"\
+        --buildtype=release \
+    . build
+                
+    meson compile -C build
+}
+
+check() {
+    msg "no checks"
+}
+
+package() {
+    depends="$depends gtk-update-icon-cache=$pkgver-r$pkgrel"
+    DESTDIR="$pkgdir" ninja -C "$builddir"/build install
+}
+
+
+demo() {
+    pkgdesc="$pkgdesc (demonstration application)"
+    depends="gtk3=$pkgver-r$pkgrel"
+    amove usr/bin/gtk3-demo \
+        usr/bin/gtk3-demo-application \
+        usr/bin/gtk3-icon-browser \
+        usr/bin/gtk3-widget-factory \
+        usr/share/gtk-3.0/gtkbuilder.rng \
+        usr/share/glib-2.0/schemas/org.gtk.Demo.gschema.xml \
+        usr/share/applications/gtk3-demo.desktop \
+        usr/share/applications/gtk3-icon-browser.desktop \
+        usr/share/applications/gtk3-widget-factory.desktop \
+        usr/share/icons
+}
+
+icon_cache() {
+    depends="$_icon_cache_depends gdk-pixbuf libintl pango glib"
+
+    amove usr/bin/gtk-update-icon-cache
+}
+
+
+sha512sums="
+f96ee1c586284af315709ec38e841bd1b2558d09e2162834a132ffc4bbcddca272a92a828550a3accaa3e4da1964ad32b3b48291e929a108a913bd18c61cd73b  gtk-3.24.51.tar.xz
+16a38bc5a85a0f1a7dfca4c465cdf9477b6ef988bbe0a4eac5d214bfb4d82e5ad031d144a43ff47f82a9f0c9a0ea6d380daed9cc9d6bc6507f81871f182bea03  qnx-fix.patch
+7adc6a4adef720b0c42457874bc721f75bcf598b1a3aa4ee015e245cc4c9cacb62498eb171d2ab489ea297e7be3836202b57b25049f7d18bc6b198ec727b167f  qnx-fix-uri-opening.patch
+9769a906ac8bb810fad32936c165657bd4120300c091c7a1f47cd1e049e76a2aa262fad1d0b17aebf79bca4b302eddd0ab65f12a6b6f5c90b2a961fb140f6d94  qnx-fix-maximize.patch
+"
