@@ -1,6 +1,6 @@
 pkgname=gtk3
 pkgver=3.24.51
-pkgrel=${pkgrel:-0}
+pkgrel=4
 pkgdesc="The GTK+ Toolkit (v3)"
 url="https://www.gtk.org/"
 arch="all"
@@ -130,7 +130,6 @@ icon_cache() {
 }
 
 
-options="$options ${DISABLE_CHECK:+!check}"
 sha512sums="
 f96ee1c586284af315709ec38e841bd1b2558d09e2162834a132ffc4bbcddca272a92a828550a3accaa3e4da1964ad32b3b48291e929a108a913bd18c61cd73b  gtk-3.24.51.tar.xz
 16a38bc5a85a0f1a7dfca4c465cdf9477b6ef988bbe0a4eac5d214bfb4d82e5ad031d144a43ff47f82a9f0c9a0ea6d380daed9cc9d6bc6507f81871f182bea03  qnx-fix.patch
